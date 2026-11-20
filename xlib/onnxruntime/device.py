@@ -61,6 +61,9 @@ class ORTDeviceInfo:
                 return f"[{self._index}] {self._name} [{(self._total_memory / 1024**3) :.3}Gb] [CUDA]"
             elif ep == 'DmlExecutionProvider':
                 return f"[{self._index}] {self._name} [{(self._total_memory / 1024**3) :.3}Gb] [DirectX12]"
+            elif ep == 'CoreMLExecutionProvider':
+                return f"[{self._index}] {self._name} [CoreML]"
+            return f"[{self._index}] {self._name}"
 
     def __repr__(self):
         return f'{self.__class__.__name__} object: ' + self.__str__()
@@ -176,6 +179,15 @@ def _initialize_ort_devices_info():
                     else:
                         break
                 dxgi_factory.Release()
+
+        if 'CoreMLExecutionProvider' in prs:
+            # macOS: CoreML dispatches to Apple GPU / Neural Engine, unsupported ops fall back to CPU.
+            devices.append ({'index'     : 0,
+                             'execution_provider' : 'CoreMLExecutionProvider',
+                             'name'      : 'Apple GPU/ANE',
+                             'total_mem' : 0,
+                             'free_mem'  : 0,
+                            })
 
         os.environ['ORT_DEVICES_COUNT'] = str(len(devices))
         for i, device in enumerate(devices):

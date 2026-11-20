@@ -1,0 +1,14 @@
+# DeepFaceLive - macOS (Apple Silicon), Python 3.13
+numpy==2.5.5
+h5py==3.16.0
+numexpr==2.14.2
+protobuf==7.36.2
+opencv-contrib-python==5.1.0.95
+PyQt6==6.12.1
+onnx==1.23.2
+onnxruntime==1.32.0
+# only needed for training / torch models
+torch==2.8.0
+torchvision==0.23.0
+# camera names in the Camera source device list
+pyobjc-framework-AVFoundation==13.0

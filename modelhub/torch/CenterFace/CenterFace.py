@@ -13,7 +13,7 @@ def CenterFace_to_onnx(onnx_filepath):
         raise Exception(f'{pth_file} does not exist.')
 
     net = CenterFaceNet()
-    net.load_state_dict( torch.load(pth_file) )
+    net.load_state_dict( torch.load(pth_file, map_location='cpu') )
 
     torch.onnx.export(net,
                       torch.from_numpy( np.zeros( (1,3,640,640), dtype=np.float32)),

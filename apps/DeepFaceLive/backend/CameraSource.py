@@ -108,6 +108,10 @@ class CameraSourceWorker(BackendWorker):
             choices = [ f'{idx} : {name}' for idx, name in enumerate(dshow.get_video_input_devices_names()) ]
             choices += [ f'{idx}' for idx in range(len(choices), 16) ]
             ole32.CoUninitialize()
+        elif platform.system() == 'Darwin':
+            from xlib.api.darwin import avfoundation
+            choices = [ f'{idx} : {name}' for idx, name in enumerate(avfoundation.get_video_input_devices_names()) ]
+            choices += [ f'{idx}' for idx in range(len(choices), 16) ]
         else:
             choices = [ f'{idx}' for idx in range(16) ]
 

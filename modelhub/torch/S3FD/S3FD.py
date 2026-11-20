@@ -8,6 +8,7 @@ import torch.nn.functional as F
 from xlib import math as lib_math
 from xlib.file import SplittedFile
 from xlib.image import ImageProcessor
+from xlib import torch as lib_torch
 from xlib.torch import TorchDeviceInfo, get_cpu_device_info
 
 
@@ -21,11 +22,11 @@ class S3FD:
         SplittedFile.merge(path, delete_parts=False)
         
         net = self.net = S3FDNet()
-        net.load_state_dict( torch.load(str(path) ))
+        net.load_state_dict( torch.load(str(path), map_location='cpu'))
         net.eval()
 
-        if not device_info.is_cpu():
-            net.cuda(device_info.get_index())
+        self._torch_device = lib_torch.get_device(device_info)
+        net.to(self._torch_device)
 
     def extract(self, img : np.ndarray, fixed_window, min_face_size=40):
         """
@@ -43,8 +44,7 @@ class S3FD:
         img = ip.ch(3).as_float32().apply( lambda img: img - [104,117,123]).get_image('NCHW')
 
         tensor = torch.from_numpy(img)
-        if not self.device_info.is_cpu():
-            tensor = tensor.cuda(self.device_info.get_index())
+        tensor = tensor.to(self._torch_device)
 
         batches_bbox = [x.data.cpu().numpy() for x in self.net(tensor)]
 

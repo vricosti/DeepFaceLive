@@ -7,8 +7,9 @@ class TorchDeviceInfo:
     """
     Represents picklable torch device info
     """
-    def __init__(self, index=None, name=None, total_memory=None):
+    def __init__(self, index=None, name=None, total_memory=None, backend='cuda'):
         self._index : int = index
+        self._backend : str = backend
         self._name : str = name
         self._total_memory : int = total_memory
 
@@ -20,6 +21,9 @@ class TorchDeviceInfo:
         self.__dict__.update(d)
 
     def is_cpu(self) -> bool: return self._index == -1
+
+    def get_backend(self) -> str:
+        return getattr(self, '_backend', 'cuda')
 
     def get_index(self) -> int:
         return self._index
@@ -45,6 +49,8 @@ class TorchDeviceInfo:
     def __str__(self):
         if self.is_cpu():
             return "CPU"
+        elif self.get_backend() == 'mps':
+            return f"[{self._index}] {self._name} [MPS]"
         else:
             return f"[{self._index}] {self._name} [{(self._total_memory / 1024**3) :.3}Gb]"
 
@@ -72,6 +78,8 @@ def get_device(device_info : TorchDeviceInfo) -> torch.device:
     """
     if device_info.is_cpu():
         return torch.device('cpu')
+    if device_info.get_backend() == 'mps':
+        return torch.device('mps')
     return torch.device(f'cuda:{device_info.get_index()}')
         
 def get_available_devices_info(include_cpu=True, cpu_only=False) -> List[TorchDeviceInfo]:
@@ -87,6 +95,9 @@ def get_available_devices_info(include_cpu=True, cpu_only=False) -> List[TorchDe
             for i in range (torch.cuda.device_count()):
                 device_props = torch.cuda.get_device_properties(i)
                 _torch_devices.append ( TorchDeviceInfo(index=i, name=device_props.name, total_memory=device_props.total_memory))
+            if len(_torch_devices) == 0 and torch.backends.mps.is_available():
+                # macOS Apple Silicon GPU
+                _torch_devices.append ( TorchDeviceInfo(index=0, name='Apple GPU', total_memory=0, backend='mps'))
         devices += _torch_devices
 
     if include_cpu:

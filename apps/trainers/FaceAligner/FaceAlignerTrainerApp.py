@@ -123,7 +123,7 @@ class FaceAlignerTrainerApp:
     def set_loss_history(self, lh): self._loss_history = lh
 
     def load(self):
-        self._model_data = model_data = torch.load(self._model_data_path, map_location='cpu') if self._model_data_path.exists() else {}
+        self._model_data = model_data = torch.load(self._model_data_path, map_location='cpu', weights_only=False) if self._model_data_path.exists() else {}
 
         self.set_device_info( lib_torch.get_device_info_by_index(model_data.get('device_index', -1)) )
         self.set_batch_size( model_data.get('batch_size', 64) )
@@ -261,7 +261,10 @@ class FaceAlignerTrainerApp:
                         self._last_save_time = time.time()
                     else:
                         self._last_save_time = None
-                        torch.cuda.empty_cache()
+                        if torch.cuda.is_available():
+                            torch.cuda.empty_cache()
+                        elif torch.backends.mps.is_available():
+                            torch.mps.empty_cache()
                     self._is_training = self._req_is_training
                 self._req_is_training = None
 

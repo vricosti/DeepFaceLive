@@ -29,7 +29,7 @@ class QBCFaceSwapViewer(qtx.QXCollapsibleSection):
 
     def _on_timer_16ms(self):
         top_qx = self.get_top_QXWindow()
-        if not self.is_opened() or (top_qx is not None and top_qx.is_minimized() ):
+        if (not self.is_opened() or (top_qx is not None and top_qx.is_minimized() )) and not self._layered_images.has_large_window():
             return
 
         bcd_id = self._bc.get_write_id()

@@ -1,3 +1,5 @@
+import sys
+import traceback
 from pathlib import Path
 
 from PyQt6.QtCore import *
@@ -27,6 +29,11 @@ class QXMainApplication(QApplication):
         settings_dirpath(None)     where the data will be saved
         """
         super().__init__([])
+
+        # PyQt6 aborts the whole process on an unhandled exception raised in a Qt callback
+        # when the default sys.excepthook is in place. Log it instead to keep the app alive.
+        if sys.excepthook is sys.__excepthook__:
+            sys.excepthook = lambda exc_type, exc, tb: traceback.print_exception(exc_type, exc, tb)
 
         if QXMainApplication.inst is not None:
             raise Exception('Only one singleton QXMainApplication is allowed')
